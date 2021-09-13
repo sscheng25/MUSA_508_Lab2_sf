@@ -64,9 +64,19 @@ Steps in this assignment:
 ## Load data from {tidycensus}
 
 ```{r acs_vars, cache = TRUE, message = FALSE, warning = FALSE, results=FALSE}
-acs_vars <- c( "[PUT YOUR VAR CODES HERE]")
+acs_vars <- c( "B01001_002",    #Total_male_population
+               "B02001_001")    #Total_population
 
-myTracts <- c("[YOUR TRACTS GEOIDs HERE]")
+myTracts <- c("42101001300",
+              "42101001400",
+              "42101001500",
+              "42101001800",
+              "42101001600",
+              "42101001700",
+              "42101001900",
+              "42101002400",
+              "42101002500",
+              "42101036600")
 
 acsTractsPHL.2019.sf <- get_acs(geography = "tract",
                              year = 2019,
@@ -76,9 +86,10 @@ acsTractsPHL.2019.sf <- get_acs(geography = "tract",
                              county = "Philadelphia",
                              output = "wide") %>%
   dplyr::select (GEOID, NAME, all_of(paste0(acs_vars,"E"))) %>%
-  rename ("[RENAME YOUR VARIABLES HERE]") %>%
+  rename (pop_male.2019 = B01001_002E,
+          total_pop.2019 = B02001_001E) %>%
   mutate(Neighborhood = ifelse(GEOID %in% myTracts,
-                               "[YOUR NEIGHBORHOOD NAME HERE]",
+                               "My Neighborhood",
                                "REST OF PHILADELPHIA"))
 ```
 
@@ -86,24 +97,24 @@ acsTractsPHL.2019.sf <- get_acs(geography = "tract",
 
 ```{r}
 acsTractsPHL.2019.sf <- acsTractsPHL.2019.sf %>% 
-  st_transform(crs = "[PUT THE WGS84 EPSG CODE HERE]")
+  st_transform(crs = "EPSG:4326")
 ```
 
 ## Plot with {ggplot2}
 
 ```{r ggplot_geom_sf, warning = FALSE, echo = FALSE}
 ggplot()+
-  geom_sf(data = acsTractsPHL.2019.sf, aes(fill = "[YOUR VARIABLE NAME HERE]"),
+  geom_sf(data = acsTractsPHL.2019.sf, aes(fill = total_pop.2019),
           color = "transparent")+
   geom_sf(data = acsTractsPHL.2019.sf %>%
-            filter(Neighborhood == "[YOUR NEIGHBORHOOD NAME HERE]") %>%
+            filter(Neighborhood == "My Neighborhood") %>%
             st_union(),
           color = "white",
           fill = "transparent")+
   # Bonus to figure out different color ramps with scale_fill_viridis()
   labs(
-    title = "[YOUR TITLE HERE]",
-    subtitle = "[YOUR SUBTITLE HERE]",
-    caption = "[YOUR CAPTION HERE]")
+    title = "Population of Philadelphia",
+    subtitle = "Year: 2019",
+    caption = "Data: US Census Bureau, ACS")
 
 ```
